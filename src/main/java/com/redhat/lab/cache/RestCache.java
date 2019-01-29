@@ -2,16 +2,16 @@ package com.redhat.lab.cache;
 
 import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
-
-import org.springframework.beans.factory.annotation.Value;
 
 import com.redhat.lab.util.Base64;
 
@@ -23,16 +23,12 @@ import com.redhat.lab.util.Base64;
  */
 public class RestCache<K, V> implements ConcurrentMap<K, V> {
 	
-	@Value("${jdg.host}")
-	private String JDG_HOST;
-	
-	@Value("$jdg.http.port")
-    private String HTTP_PORT;
-	
-	@Value("${jdg.rest.context.path}")
-    private String REST_CONTEXT_PATH;
+    private static final String JDG_HOST = "jdg.host";
+    private static final String HTTP_PORT = "jdg.http.port";
+    private static final String REST_CONTEXT_PATH = "jdg.rest.context.path";
+    private static final String CACHE_NAME = "jdg.cache.name";
+    private static final String PROPERTIES_FILE = "jdg.properties";
 
-	@Value("${jdg.cache.name}")
     private String cacheName;
 	
     private String basicUrl;
@@ -42,7 +38,8 @@ public class RestCache<K, V> implements ConcurrentMap<K, V> {
     private static final String DELETE = "DELETE";
 
     public RestCache() {
-        this.basicUrl = "http://" + JDG_HOST + ":" + HTTP_PORT + REST_CONTEXT_PATH + "/" + cacheName;
+    	cacheName = jdgProperty(CACHE_NAME);
+        this.basicUrl = "http://" + jdgProperty(JDG_HOST) + ":" + jdgProperty(HTTP_PORT) + jdgProperty(REST_CONTEXT_PATH) + "/" + cacheName;
     }
 
     private String doOperation(String method, String key, Object value) {
@@ -188,5 +185,15 @@ public class RestCache<K, V> implements ConcurrentMap<K, V> {
     @Override
     public V replace(K key, V value) {
         return put(key, value);
+    }
+    
+    public static String jdgProperty(String name) {
+        Properties props = new Properties();
+        try {
+            props.load(Base64.class.getClassLoader().getResourceAsStream(PROPERTIES_FILE));
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
+        return props.getProperty(name);
     }
 }
