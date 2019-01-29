@@ -29,6 +29,10 @@ public class RestCache<K, V> implements ConcurrentMap<K, V> {
     private static final String REST_CONTEXT_PATH = "jdg.rest.context.path";
     private static final String CACHE_NAME = "jdg.cache.name";
     private static final String PROPERTIES_FILE = "/etc/config/jdg.properties";
+    
+    private static final String JDG_USER = "JDG_USERNAME";
+    
+    private static final String JDG_PASS = "JDG_PASSWORD";
 
     private String cacheName;
 	
@@ -46,7 +50,7 @@ public class RestCache<K, V> implements ConcurrentMap<K, V> {
     private String doOperation(String method, String key, Object value) {
         try {
             URL url = key == null ? new URL(basicUrl) : new URL(basicUrl + "/" + key);
-            String userCredentials = "ispnadmin:n0t13n3!";
+            String userCredentials = System.getenv(JDG_USER) + ":" + System.getenv(JDG_PASS);
             String basicAuth = "Basic " + new String(Base64.encodeBytes(userCredentials.getBytes()));
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod(method);
