@@ -1,6 +1,7 @@
 package com.redhat.lab.cache;
 
 import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +28,7 @@ public class RestCache<K, V> implements ConcurrentMap<K, V> {
     private static final String HTTP_PORT = "jdg.http.port";
     private static final String REST_CONTEXT_PATH = "jdg.rest.context.path";
     private static final String CACHE_NAME = "jdg.cache.name";
-    private static final String PROPERTIES_FILE = "jdg.properties";
+    private static final String PROPERTIES_FILE = "/etc/config/jdg.properties";
 
     private String cacheName;
 	
@@ -189,8 +190,10 @@ public class RestCache<K, V> implements ConcurrentMap<K, V> {
     
     public static String jdgProperty(String name) {
         Properties props = new Properties();
+        InputStream input = null;
         try {
-            props.load(Base64.class.getClassLoader().getResourceAsStream(PROPERTIES_FILE));
+        	input = new FileInputStream(PROPERTIES_FILE);
+            props.load(input);
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         }
